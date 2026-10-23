@@ -11,6 +11,7 @@
 PhotoVault est une application multi-composants destinée à un usage personnel : importer, organiser, rechercher et visualiser ses photos en toute confidentialité.
 
 **Critères de succès**
+
 - Portfolio démontrable : application complète, testée, documentée, déployable via Docker Compose.
 - Couverture des axes Angular modernes : Signals pour l'état, RxJS pour les flux asynchrones, routing avancé, formulaires typés, SSR là où cela a du sens.
 - Sécurité réelle : accès strictement limité au propriétaire des photos.
@@ -20,13 +21,13 @@ PhotoVault est une application multi-composants destinée à un usage personnel 
 
 ### 2.1 Fonctionnel (v1)
 
-| Bloc | Contenu |
-|------|---------|
-| **Bibliothèque photo** | Galerie chronologique, grille responsive, vue plein écran, sélection multiple, navigation au clavier, chargement progressif |
-| **Import et stockage** | Upload multiple, glisser-déposer, aperçu local, progression, annulation, détection de doublons, génération de miniatures |
-| **Organisation** | Albums, favoris, tags, archives, corbeille, dates de prise de vue, filtres combinés |
-| **Recherche intelligente** | Recherche par nom, date, type, album et tag ; architecture extensible (lieu, contenu visuel plus tard) |
-| **Compte et confidentialité** | Connexion, profil, sessions sécurisées, suppression de compte, accès strictement limité au propriétaire |
+| Bloc                          | Contenu                                                                                                                     |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Bibliothèque photo**        | Galerie chronologique, grille responsive, vue plein écran, sélection multiple, navigation au clavier, chargement progressif |
+| **Import et stockage**        | Upload multiple, glisser-déposer, aperçu local, progression, annulation, détection de doublons, génération de miniatures    |
+| **Organisation**              | Albums, favoris, tags, archives, corbeille, dates de prise de vue, filtres combinés                                         |
+| **Recherche intelligente**    | Recherche par nom, date, type, album et tag ; architecture extensible (lieu, contenu visuel plus tard)                      |
+| **Compte et confidentialité** | Connexion, profil, sessions sécurisées, suppression de compte, accès strictement limité au propriétaire                     |
 
 ### 2.2 Hors périmètre (v1)
 
@@ -34,21 +35,21 @@ Partage public, collaboration temps réel, reconnaissance faciale, albums automa
 
 ## 3. Stack technique
 
-| Couche | Technologie | Rôle |
-|--------|-------------|------|
-| Frontend | Angular 20+, standalone | Interface et navigation |
-| SSR | Angular SSR, coquille publique (landing, login) rendue serveur ; galerie (derrière auth) en client | Perf/SEO de l'accueil |
-| Réactivité | Signals + RxJS | État local et flux asynchrones |
-| UI | Angular CDK + Tailwind | Grilles (virtual scroll), overlays, drag-and-drop |
-| Backend | NestJS, monolithe modulaire | API REST et logique métier |
-| Base de données | PostgreSQL | Métadonnées uniquement (jamais de binaire) |
-| ORM | Prisma | Schéma et migrations |
-| Stockage fichiers | MinIO en local, S3 en production | Originaux et dérivés, noms internes générés par le serveur |
-| Traitement images | Sharp, asynchrone (file BullMQ + Redis) | Miniatures et dérivés optimisés |
-| Authentification | Access JWT court + refresh token rotatif en cookie httpOnly | Identité et contrôle d'accès |
-| Tests | Vitest (Angular), Jest (NestJS), Testing Library, Playwright | Unitaires, composants, parcours |
-| Dépôt | Monorepo : `apps/web`, `apps/api`, `packages/shared` | Code partagé (types/contrats) |
-| Déploiement | Docker Compose (+ CI GitHub Actions) | Environnement reproductible |
+| Couche            | Technologie                                                                                        | Rôle                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Frontend          | Angular 20+, standalone                                                                            | Interface et navigation                                    |
+| SSR               | Angular SSR, coquille publique (landing, login) rendue serveur ; galerie (derrière auth) en client | Perf/SEO de l'accueil                                      |
+| Réactivité        | Signals + RxJS                                                                                     | État local et flux asynchrones                             |
+| UI                | Angular CDK + Tailwind                                                                             | Grilles (virtual scroll), overlays, drag-and-drop          |
+| Backend           | NestJS, monolithe modulaire                                                                        | API REST et logique métier                                 |
+| Base de données   | PostgreSQL                                                                                         | Métadonnées uniquement (jamais de binaire)                 |
+| ORM               | Prisma                                                                                             | Schéma et migrations                                       |
+| Stockage fichiers | MinIO en local, S3 en production                                                                   | Originaux et dérivés, noms internes générés par le serveur |
+| Traitement images | Sharp, asynchrone (file BullMQ + Redis)                                                            | Miniatures et dérivés optimisés                            |
+| Authentification  | Access JWT court + refresh token rotatif en cookie httpOnly                                        | Identité et contrôle d'accès                               |
+| Tests             | Vitest (Angular), Jest (NestJS), Testing Library, Playwright                                       | Unitaires, composants, parcours                            |
+| Dépôt             | Monorepo : `apps/web`, `apps/api`, `packages/shared`                                               | Code partagé (types/contrats)                              |
+| Déploiement       | Docker Compose (+ CI GitHub Actions)                                                               | Environnement reproductible                                |
 
 ## 4. Architecture
 

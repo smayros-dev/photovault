@@ -4,7 +4,16 @@ const tseslint = require('typescript-eslint');
 
 module.exports = tseslint.config(
   {
-    ignores: ['dist/', 'node_modules/', '.angular/', 'coverage/', '.worktrees/', '.superpowers/'],
+    ignores: [
+      'dist/',
+      '**/dist/',
+      'node_modules/',
+      '.angular/',
+      'coverage/',
+      '**/coverage/',
+      '.worktrees/',
+      '.superpowers/',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

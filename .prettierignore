@@ -5,3 +5,4 @@ coverage/
 .worktrees/
 .superpowers/
 package-lock.json
+*.tsbuildinfo

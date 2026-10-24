@@ -26,7 +26,7 @@
 
 1. **`.env` ou secrets committés** — un dépôt portfolio qui pousse des secrets est disqualifiant ; on s'attend à ce que `git ls-files` ne contienne aucun `.env` (test ajouté au Task 5).
 2. **Dérive de version Node** — Angular 20 refuse Node < 20.19 ; on s'attend à ce que `node -v` dans `engines`, `.nvmrc` et CI donnent la même version 22 (test ajouté au Task 7).
-3. **Services Docker pas prêts au démarrage** — Prisma et l'API échouent si Postgres/MinIO ne sont pas *healthy* ; on s'attend à ce que `docker compose up --wait` bloque jusqu'aux healthchecks (test ajouté au Task 5).
+3. **Services Docker pas prêts au démarrage** — Prisma et l'API échouent si Postgres/MinIO ne sont pas _healthy_ ; on s'attend à ce que `docker compose up --wait` bloque jusqu'aux healthchecks (test ajouté au Task 5).
 4. **Échec de migration sur base fraîche** — un clone neuf doit réussir `prisma migrate deploy` contre Postgres vierge (test ajouté au Task 6).
 5. **Cassure des builds par le hoisting npm workspaces** — les CLI Angular/Nest peuvent résoudre des versions dupliquées ; on s'attend à ce que les deux apps buildent depuis la racine après `npm ci` (tests ajoutés aux Tasks 3 et 4, rejoués en CI au Task 7).
 
@@ -35,9 +35,11 @@
 ### Task 1: Racine du monorepo (workspaces, lint, format, git)
 
 **Files:**
+
 - Create: `package.json`, `.gitignore`, `.gitattributes`, `.nvmrc`, `.prettierrc.json`, `.prettierignore`, `eslint.config.js`, `tsconfig.base.json`
 
 **Interfaces:**
+
 - Produits: racine npm workspaces (`apps/*`, `packages/*`) ; scripts racine `npm run lint`, `npm run format:check`, `npm run build` (délégués plus tard aux apps) ; `tsconfig.base.json` (strict: true, `paths` vers `@photovault/shared`). Les Tasks 3-4 branchent leurs scripts sur ces noms.
 
 - [ ] **Step 1: Créer la racine workspace**
@@ -69,14 +71,16 @@ git commit -m "chore: monorepo workspace root with eslint/prettier/tsconfig"
 ### Task 2: packages/shared (contrats et constantes)
 
 **Files:**
+
 - Create: `packages/shared/package.json`, `packages/shared/tsconfig.json`, `packages/shared/src/index.ts`, `packages/shared/src/constants.ts`, `packages/shared/src/constants.spec.ts`
 
 **Interfaces:**
+
 - Produits: paquet `@photovault/shared` exportant :
   - `MAX_UPLOAD_BYTES: number` = `26214400` (25 Mo)
   - `ALLOWED_IMAGE_MIMES: readonly string[]` = `['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']`
   - `API_BASE_URL: string` = `'/api'`
-  Consommé par apps/api (validation upload) et apps/web (affichage/refus client).
+    Consommé par apps/api (validation upload) et apps/web (affichage/refus client).
 
 - [ ] **Step 1: Écrire le test qui échoue**
 
@@ -89,7 +93,13 @@ import { ALLOWED_IMAGE_MIMES, API_BASE_URL, MAX_UPLOAD_BYTES } from './constants
 describe('shared constants', () => {
   it('MAX_UPLOAD_BYTES vaut 25 Mo', () => expect(MAX_UPLOAD_BYTES).toBe(26214400));
   it('ALLOWED_IMAGE_MIMES contient jpeg/png/webp/gif/avif', () =>
-    expect([...ALLOWED_IMAGE_MIMES]).toEqual(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']));
+    expect([...ALLOWED_IMAGE_MIMES]).toEqual([
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/avif',
+    ]));
   it('API_BASE_URL pointe vers /api', () => expect(API_BASE_URL).toBe('/api'));
 });
 ```
@@ -120,9 +130,11 @@ git commit -m "feat(shared): constantes upload et base API"
 ### Task 3: apps/api — scaffold NestJS + endpoint de santé
 
 **Files:**
+
 - Create: `apps/api/` (via Nest CLI), `apps/api/src/health/health.controller.ts`, `apps/api/src/health/health.controller.spec.ts`, `apps/api/test/health.e2e-spec.ts`, `apps/api/test/jest-e2e.json`
 
 **Interfaces:**
+
 - Produits: app `@photovault/api` ; endpoint `GET /health` → `{ status: 'ok' }` (200) ; scripts `npm run build -w @photovault/api`, `npm test -w @photovault/api`, `npm run test:e2e -w @photovault/api` ; commande générique `npx nest g` utilisée par la suite pour les modules `auth`, `photos`, etc.
 
 - [ ] **Step 1: Écrire les tests qui échouent**
@@ -157,9 +169,11 @@ git commit -m "feat(api): scaffold NestJS avec endpoint de santé"
 ### Task 4: apps/web — scaffold Angular 20 SSR + Tailwind + Vitest
 
 **Files:**
+
 - Create: `apps/web/` (via Angular CLI), `apps/web/tailwind.config.js`, `apps/web/src/styles.css` (directives Tailwind), `apps/web/src/app/app.component.spec.ts`
 
 **Interfaces:**
+
 - Produits: app `@photovault/web` ; routes : `/` (landing publique), `/login`, `/register` (formulaires — contenu réel dans le plan Auth, ici placeholder + navigation) ; styles Tailwind actifs ; scripts `npm run build -w @photovault/web`, `npm run dev -w @photovault/web`, `npm test -w @photovault/web` (Vitest) ; SSR activé (`app.config.ts` avec `provideClientHydration()`).
 
 - [ ] **Step 1: Scaffold l'application**
@@ -198,14 +212,17 @@ git commit -m "feat(web): scaffold Angular 20 SSR avec Tailwind et Vitest"
 ### Task 5: Docker Compose (PostgreSQL, Redis, MinIO)
 
 **Files:**
+
 - Create: `docker-compose.yml`, `.env.example`, `.env.guard.spec.sh` (script de vérification)
 
 **Interfaces:**
+
 - Produits: services `postgres` (16-alpine, port 5432, healthcheck `pg_isready`), `redis` (7-alpine, port 6379, healthcheck `redis-cli ping`), `minio` (port 9000/9001, healthcheck `mc ready local` ou curl /minio/health/ready), volumes nommés `pgdata`, `miniodata` ; `.env.example` avec `POSTGRES_USER=photovault`, `POSTGRES_PASSWORD=photovault`, `POSTGRES_DB=photovault`, `MINIO_ROOT_USER=minioadmin`, `MINIO_ROOT_PASSWORD=minioadmin`, `JWT_ACCESS_SECRET=change-me`, `JWT_REFRESH_SECRET=change-me`. Consommé par Task 6 (Prisma) et les plans suivants.
 
 - [ ] **Step 1: Écrire le test d'infra qui échoue**
 
 `.env.guard.spec.sh` :
+
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -242,14 +259,16 @@ git commit -m "chore(infra): docker compose postgres/redis/minio avec healthchec
 ### Task 6: Prisma + modèle User
 
 **Files:**
+
 - Create: `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/**`
 - Modify: `apps/api/package.json` (scripts `prisma:migrate`, `prisma:generate`), `.env.example` (variable `DATABASE_URL`)
 
 **Interfaces:**
+
 - Produits: modèle Prisma `User` :
   `id uuid @id @default(uuid())`, `email String @unique`, `passwordHash String`, `name String`, `createdAt DateTime @default(now())`, `deletedAt DateTime?`
-  + modèle `RefreshToken` anticipé (pillé du spec) : `id`, `userId`, `tokenHash String @unique`, `expiresAt DateTime`, `rotatedAt DateTime?`, `createdAt` — relation `User`.
-  Scripts : `npm run prisma:migrate -w @photovault/api` (=`prisma migrate dev`), `npm run prisma:deploy -w @photovault/api`. `DATABASE_URL=postgresql://photovault:photovault@localhost:5432/photovault` ajouté à `.env.example`. Les plans Auth/Photos consomment ces modèles.
+  - modèle `RefreshToken` anticipé (pillé du spec) : `id`, `userId`, `tokenHash String @unique`, `expiresAt DateTime`, `rotatedAt DateTime?`, `createdAt` — relation `User`.
+    Scripts : `npm run prisma:migrate -w @photovault/api` (=`prisma migrate dev`), `npm run prisma:deploy -w @photovault/api`. `DATABASE_URL=postgresql://photovault:photovault@localhost:5432/photovault` ajouté à `.env.example`. Les plans Auth/Photos consomment ces modèles.
 
 - [ ] **Step 1: Écrire le test qui échoue**
 
@@ -281,9 +300,11 @@ git commit -m "feat(api): schéma Prisma User/RefreshToken + migration init"
 ### Task 7: CI GitHub Actions
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 **Interfaces:**
+
 - Produits: workflow déclenché sur `pull_request` vers `main` et sur `push` de `main` : jobs `lint-format` (eslint + prettier), `build-test` (matrix : api → `npm ci`, `npm test -w @photovault/api`, `npm run build -w @photovault/api`, `prisma migrate deploy` avec service `postgres:16` ; web → `npm test -w @photovault/web`, `npm run build -w @photovault/web`), `infra` (`docker compose config -q` + vérif `.env` non versionné). Chaque job : `actions/setup-node@v4` avec `node-version-file: .nvmrc`.
 
 - [ ] **Step 1: Écrire le test CI qui échoue**

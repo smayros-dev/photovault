@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Verify Node version
+        run: node -v | grep -q "^v22"
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [api, web]
+    env:
+      DATABASE_URL: postgresql://photovault:photovault@localhost:5432/photovault
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: photovault
+          POSTGRES_PASSWORD: photovault
+          POSTGRES_DB: photovault
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U photovault -d photovault"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Verify Node version
+        run: node -v | grep -q "^v22"
+      - run: npm ci
+      - name: Prisma generate (api)
+        if: matrix.project == 'api'
+        run: npm run prisma:generate -w @photovault/api
+      - name: Unit tests (api)
+        if: matrix.project == 'api'
+        run: npm test -w @photovault/api
+      - name: Build (api)
+        if: matrix.project == 'api'
+        run: npm run build -w @photovault/api
+      - name: Prisma migrate deploy (api)
+        if: matrix.project == 'api'
+        run: npm run prisma:deploy -w @photovault/api
+      - name: Unit tests (web)
+        if: matrix.project == 'web'
+        run: npm test -w @photovault/web
+      - name: Build (web)
+        if: matrix.project == 'web'
+        run: npm run build -w @photovault/web
+
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify Node version
+        run: node -v | grep -q "^v22"
+      - name: docker compose config
+        run: docker compose config -q
+      - name: Assert .env not tracked
+        run: |
+          ! git ls-files | grep -qE '(^|/)\.env$'

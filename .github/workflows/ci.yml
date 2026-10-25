@@ -24,6 +24,13 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
+      # Shared is folded into this cheap job: no services needed, and it
+      # guards the tsconfig.base.json / @photovault/shared seam (typecheck
+      # would have caught the TS6 baseUrl deprecation error).
+      - name: Typecheck (shared)
+        run: npx tsc -p packages/shared --noEmit
+      - name: Unit tests (shared)
+        run: npm test -w @photovault/shared
 
   build-test:
     runs-on: ubuntu-latest

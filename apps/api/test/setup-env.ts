@@ -1,9 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
-const envPath = path.resolve(__dirname, '..', '.env');
+const candidates = [
+  path.resolve(__dirname, '..', '.env'),
+  path.resolve(__dirname, '..', '..', '..', '.env'),
+];
+const envPath = candidates.find((p) => existsSync(p));
 
-if (existsSync(envPath)) {
+if (envPath) {
   for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
     const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
     if (!match) {
